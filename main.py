@@ -46,7 +46,7 @@ def build_activity_calendar(events):
         if 0 <= delta < 7:
             previous_week[delta] = True
 
-   
+    previous_week.reverse()
     activity_graph = "".join(["🟩" if active else "⬛" for active in previous_week])
     text = f"{activity_graph}"
     tooltip = "GitHub contribution activity over the last 7 days"
