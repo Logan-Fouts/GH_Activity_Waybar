@@ -7,29 +7,25 @@ import json
 load_dotenv()
 
 def main():
-    username = os.getenv("USERNAME")
+    username = os.getenv("USERNAME_New")
     github_token = os.getenv("GITHUB_TOKEN")
 
-   
     if not username or not github_token:
         print(json.dumps({"text": "Error: Missing USERNAME or GITHUB_TOKEN", "tooltip": "Check your .env file"}))
         exit(1)
 
-  
-    events = fetch_events(username, github_token)
-
    
+    events = fetch_events(username, github_token)
+    
     activity_graph = generate_activity_graph(events)
 
-    
     text = f"{activity_graph}"
-    tooltip = "Github contribution activity over the last 7 days"
+    tooltip = "GitHub contribution activity over the last 7 days"
 
-    
     print(json.dumps({"text": text, "tooltip": tooltip}))
 
 def fetch_events(username, github_token):
-    url = f"https://api.github.com/users/{username}/received_events/public"
+    url = f"https://api.github.com/users/{username}/events"
     headers = {
         "Accept": "application/vnd.github+json",
         "Authorization": f"Bearer {github_token}",
@@ -46,18 +42,19 @@ def fetch_events(username, github_token):
 
 def generate_activity_graph(events):
     now = datetime.utcnow()
-    days_of_week = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
-    activity = {day: False for day in days_of_week}
+    activity = [False] * 7 
 
     for event in events:
-        created_at = event["created_at"] 
-        event_time = datetime.strptime(created_at, "%Y-%m-%dT%H:%M:%SZ")  
- 
-        if (now - event_time).days <= 7:
-            day_of_week = event_time.strftime("%A")  
-            activity[day_of_week] = True 
+        created_at = event["created_at"]
+        event_time = datetime.strptime(created_at, "%Y-%m-%dT%H:%M:%SZ")
 
-    activity_graph = "".join(["🟩" if activity[day] else "⬛" for day in days_of_week])
+        days_ago = (now - event_time).days
+
+        if 0 <= days_ago < 7:
+            activity[days_ago] = True
+
+
+    activity_graph = "".join(["🟩" if active else "⬛" for active in activity])
     return activity_graph
 
 if __name__ == "__main__":
