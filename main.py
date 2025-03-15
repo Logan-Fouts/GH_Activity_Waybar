@@ -1,7 +1,7 @@
 import requests
 from dotenv import load_dotenv
 import os
-from datetime import datetime, timedelta
+from datetime import date, datetime, timedelta
 import json
 
 load_dotenv()
@@ -14,15 +14,8 @@ def main():
         print(json.dumps({"text": "Error: Missing USERNAME or GITHUB_TOKEN", "tooltip": "Check your .env file"}))
         exit(1)
 
-   
     events = fetch_events(username, github_token)
-    
-    activity_graph = generate_activity_graph(events)
-
-    text = f"{activity_graph}"
-    tooltip = "GitHub contribution activity over the last 7 days"
-
-    print(json.dumps({"text": text, "tooltip": tooltip}))
+    build_activity_calendar(events)
 
 def fetch_events(username, github_token):
     url = f"https://api.github.com/users/{username}/events"
@@ -40,22 +33,24 @@ def fetch_events(username, github_token):
 
     return response.json()
 
-def generate_activity_graph(events):
-    now = datetime.utcnow()
-    activity = [False] * 7 
+def build_activity_calendar(events):
+    previous_week = [False] * 7
+
+    today = date.today()
 
     for event in events:
-        created_at = event["created_at"]
-        event_time = datetime.strptime(created_at, "%Y-%m-%dT%H:%M:%SZ")
+        event_date = datetime.fromisoformat(event["created_at"].replace("Z", "")).date()
+        
+        delta = (today - event_date).days
+        
+        if 0 <= delta < 7:
+            previous_week[delta] = True
 
-        days_ago = (now - event_time).days
-
-        if 0 <= days_ago < 7:
-            activity[days_ago] = True
-
-
-    activity_graph = "".join(["🟩" if active else "⬛" for active in activity])
-    return activity_graph
+   
+    activity_graph = "".join(["🟩" if active else "⬛" for active in previous_week])
+    text = f"{activity_graph}"
+    tooltip = "GitHub contribution activity over the last 7 days"
+    print(json.dumps({"text": text, "tooltip": tooltip}))
 
 if __name__ == "__main__":
     main()
