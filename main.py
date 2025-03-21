@@ -18,7 +18,7 @@ def main():
     build_activity_calendar(events)
 
 def fetch_events(username, github_token):
-    url = f"https://api.github.com/users/{username}/events"
+    url = f"https://api.github.com/users/{username}/events?per_page=100&page=1"
     headers = {
         "Accept": "application/vnd.github+json",
         "Authorization": f"Bearer {github_token}",
