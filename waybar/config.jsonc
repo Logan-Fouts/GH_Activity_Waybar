@@ -23,7 +23,7 @@
 
 // sourced from modules based on config.ctl //
     "custom/github-activity": {
-        "exec": "python /home/logan/Code/gh_contribs/main.py",
+        "exec": "python /home/logan/Code/GH_Activity_Waybar/main.py",
         "return-type": "json",
         "interval": 3600,  // Update every hour
         "format": "{}",  // Display format
